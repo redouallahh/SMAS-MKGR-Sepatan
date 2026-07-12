@@ -20,7 +20,7 @@ $query = mysqli_query($db, "
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏫</text></svg>">
+    <link rel="icon" type="image/png" href="images/logosekolah.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cetak Jadwal - SMAS MKGR Sepatan</title>
