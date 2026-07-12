@@ -22,6 +22,11 @@ if (isset($_POST['ajax'])) {
     $username = mysqli_real_escape_string($db, $_POST['username']);
     $password = mysqli_real_escape_string($db, $_POST['password']);
     
+    if (empty($password)) {
+        echo json_encode(['status' => 'error', 'message' => 'Password wajib diisi!']);
+        exit;
+    }
+    
     // Cek username
     $cek = mysqli_query($db, "SELECT id FROM user WHERE username='$username'");
     if(mysqli_num_rows($cek) > 0) {

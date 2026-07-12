@@ -36,6 +36,11 @@ if (isset($_POST['ajax'])) {
     $username = mysqli_real_escape_string($db, $_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
     
+    if (empty($password)) {
+        echo json_encode(['status' => 'error', 'message' => 'Password wajib diisi untuk keamanan!']);
+        exit;
+    }
+    
     // Validasi username unik
     if (!empty($username)) {
         $id_user = $row['id_user'];
@@ -159,8 +164,8 @@ if (isset($_POST['ajax'])) {
                                     <input type="text" name="username" value="<?= htmlspecialchars($row['username'] ?? ''); ?>" pattern="[a-zA-Z0-9_]+" title="Hanya huruf, angka, dan underscore" required placeholder="Cth: budi_123" class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all">
                                 </div>
                                 <div>
-                                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Password Baru <span class="text-slate-400 font-normal lowercase">(Opsional)</span></label>
-                                    <input type="password" name="password" placeholder="Kosongkan jika tidak ingin diubah" class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all">
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Password Login</label>
+                                    <input type="password" name="password" required placeholder="Masukkan kata sandi" class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all">
                                 </div>
                             </div>
                         </div>
