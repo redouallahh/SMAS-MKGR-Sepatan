@@ -38,6 +38,7 @@ $username = $_SESSION['username'] ?? 'User';
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-50">
 <head>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏫</text></svg>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SMAS MKGR Sepatan</title>
