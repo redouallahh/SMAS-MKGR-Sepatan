@@ -14,12 +14,8 @@ if ($_SESSION['role'] !== 'admin') {
 if (isset($_GET['id']) && !empty($_GET['id'])) {
     $id = mysqli_real_escape_string($db, $_GET['id']);
     
-    // Data Loss Prevention: Cek apakah mapel punya jadwal
-    $cek_jadwal = mysqli_query($db, "SELECT id FROM jadwal WHERE id_mapel = '$id'");
-    if (mysqli_num_rows($cek_jadwal) > 0) {
-        echo "<script>alert('Gagal menghapus! Mata Pelajaran ini masih digunakan dalam jadwal yang aktif. Silakan hapus jadwalnya terlebih dahulu (Data Loss Prevention).'); window.location='mapel.php';</script>";
-        exit;
-    }
+    // Data Loss Prevention: Kosongkan referensi mapel di jadwal agar slot tetap ada
+    mysqli_query($db, "UPDATE jadwal SET id_mapel = NULL WHERE id_mapel = '$id'");
     
     $delete = mysqli_query($db, "DELETE FROM mapel WHERE id = '$id'");
     

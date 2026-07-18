@@ -20,12 +20,9 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
     $guru = mysqli_fetch_assoc($q);
     $id_user = $guru['id_user'] ?? null;
 
-    // Data Loss Prevention: Cek apakah guru punya jadwal
-    $cek_jadwal = mysqli_query($db, "SELECT id FROM jadwal WHERE id_guru = '$id'");
-    if (mysqli_num_rows($cek_jadwal) > 0) {
-        echo "<script>alert('Gagal menghapus! Guru ini masih memiliki jadwal yang aktif. Silakan hapus jadwalnya terlebih dahulu untuk mencegah kehilangan data (Data Loss Prevention).'); window.location='guru.php';</script>";
-        exit;
-    }
+    // Data Loss Prevention: Jangan hapus jadwalnya, tapi kosongkan gurunya (set NULL)
+    // agar slot jadwal kelas tidak hilang.
+    mysqli_query($db, "UPDATE jadwal SET id_guru = NULL WHERE id_guru = '$id'");
 
     // Jalankan query hapus asli ke database
     $delete = mysqli_query($db, "DELETE FROM guru WHERE id = '$id'");
