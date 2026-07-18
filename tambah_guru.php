@@ -13,6 +13,7 @@ if ($_SESSION['role'] !== 'admin') {
 
 if (isset($_POST['ajax'])) {
     header('Content-Type: application/json');
+    $kode_guru = mysqli_real_escape_string($db, $_POST['kode_guru']);
     $nip = mysqli_real_escape_string($db, $_POST['nip']);
     $nama = mysqli_real_escape_string($db, $_POST['nama_guru']);
     $kontak = mysqli_real_escape_string($db, $_POST['kontak']);
@@ -24,6 +25,29 @@ if (isset($_POST['ajax'])) {
     
     if (empty($password)) {
         echo json_encode(['status' => 'error', 'message' => 'Password wajib diisi!']);
+        exit;
+    }
+
+    // Cek Kode Guru
+    $cek_kode = mysqli_query($db, "SELECT id FROM guru WHERE kode_guru='$kode_guru'");
+    if(mysqli_num_rows($cek_kode) > 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Kode Guru sudah terpakai!']);
+        exit;
+    }
+    
+    // Cek NIP
+    $cek_nip = mysqli_query($db, "SELECT id FROM guru WHERE nip='$nip'");
+    $cek_nip_kepsek = mysqli_query($db, "SELECT id FROM kepalasekolah WHERE nip='$nip'");
+    if(mysqli_num_rows($cek_nip) > 0 || mysqli_num_rows($cek_nip_kepsek) > 0) {
+        echo json_encode(['status' => 'error', 'message' => 'NIP sudah terdaftar!']);
+        exit;
+    }
+
+    // Cek Kontak
+    $cek_kontak = mysqli_query($db, "SELECT id FROM guru WHERE kontak='$kontak'");
+    $cek_kontak_kepsek = mysqli_query($db, "SELECT id FROM kepalasekolah WHERE kontak='$kontak'");
+    if(mysqli_num_rows($cek_kontak) > 0 || mysqli_num_rows($cek_kontak_kepsek) > 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Nomor HP/Telepon sudah terdaftar!']);
         exit;
     }
     
@@ -40,8 +64,8 @@ if (isset($_POST['ajax'])) {
     $id_user = mysqli_insert_id($db);
     
     // Insert Guru
-    $insert = mysqli_query($db, "INSERT INTO guru (id_user, nip, nama_guru, kontak, status_tugas, notes) 
-                            VALUES ('$id_user', '$nip', '$nama', '$kontak', '$status_tugas', '$notes')");
+    $insert = mysqli_query($db, "INSERT INTO guru (id_user, kode_guru, nip, nama_guru, kontak, status_tugas, notes) 
+                            VALUES ('$id_user', '$kode_guru', '$nip', '$nama', '$kontak', '$status_tugas', '$notes')");
                             
     if ($insert) {
         echo json_encode(['status' => 'success', 'message' => 'Data guru berhasil ditambahkan!']);
@@ -50,6 +74,11 @@ if (isset($_POST['ajax'])) {
     }
     exit;
 }
+
+// Auto-generate kode guru berikutnya
+$res_kode = mysqli_query($db, "SELECT MAX(CAST(kode_guru AS UNSIGNED)) as max_kode FROM guru");
+$row_kode = mysqli_fetch_assoc($res_kode);
+$next_kode = ($row_kode['max_kode'] !== null) ? (int)$row_kode['max_kode'] + 1 : 26;
 ?>
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-50">
@@ -83,16 +112,19 @@ if (isset($_POST['ajax'])) {
                         </svg>
                     </a>
                     <div>
-                        <h2 class="text-xl font-extrabold text-slate-900">Registrasi Tenaga Pengajar</h2>
+                        <h2 class="text-xl font-extrabold text-slate-900">Tambah Data Guru</h2>
                         <p class="text-xs text-slate-400 mt-0.5">Tambahkan biodata guru  ke dalam database master.</p>
                     </div>
                 </div>
 
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-100 shadow-sm">
                     <form action="" method="POST" class="space-y-5">
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Nomor Induk Pegawai (NIP)</label>
-                            <input type="text" name="nip" pattern="\d{18}" maxlength="18" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="NIP harus 18 digit angka" placeholder="Masukkan 18 digit NIP..." required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <input type="hidden" name="kode_guru" value="<?= $next_kode ?>">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Nomor Induk Pegawai (NIP)</label>
+                                <input type="text" name="nip" pattern="\d{18}" maxlength="18" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="NIP harus 18 digit angka" placeholder="Masukkan 18 digit NIP..." required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
+                            </div>
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Nama Lengkap & Gelar</label>
@@ -104,7 +136,7 @@ if (isset($_POST['ajax'])) {
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Status Tugas</label>
-                            <select name="status_tugas" class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 font-semibold text-slate-700 transition-all">
+                            <select name="status_tugas" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 font-semibold text-slate-700 transition-all">
                                 <option value="Aktif Mengajar">Aktif Mengajar</option>
                                 <option value="Cuti">Cuti / Non-Aktif Sementara</option>
                             </select>

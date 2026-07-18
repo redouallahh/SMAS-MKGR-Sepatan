@@ -103,15 +103,8 @@ if (isset($_POST['ajax'])) {
                             </div>
 
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Jam Pelajaran & Durasi</label>
-                                <select name="jam_ke" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 font-semibold text-slate-700 transition-all">
-                                    <option value="1" <?= ($row['jam_ke'] == '1') ? 'selected' : ''; ?>>Jam Ke-1 (07:15 - 08:00 WIB)</option>
-                                    <option value="2" <?= ($row['jam_ke'] == '2') ? 'selected' : ''; ?>>Jam Ke-2 (08:00 - 08:45 WIB)</option>
-                                    <option value="3" <?= ($row['jam_ke'] == '3') ? 'selected' : ''; ?>>Jam Ke-3 (08:45 - 09:30 WIB)</option>
-                                    <option value="4" <?= ($row['jam_ke'] == '4') ? 'selected' : ''; ?>>Jam Ke-4 (09:45 - 10:30 WIB)</option>
-                                    <option value="5" <?= ($row['jam_ke'] == '5') ? 'selected' : ''; ?>>Jam Ke-5 (10:30 - 11:15 WIB)</option>
-                                    <option value="6" <?= ($row['jam_ke'] == '6') ? 'selected' : ''; ?>>Jam Ke-6 (11:15 - 12:00 WIB)</option>
-                                </select>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Jam Ke-</label>
+                                <input type="number" name="jam_ke" value="<?= $row['jam_ke']; ?>" min="1" max="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="Jam ke harus antara 1 sampai 10" required placeholder="Contoh: 1, 2, 8..." class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
                             </div>
                         </div>
 
@@ -119,10 +112,10 @@ if (isset($_POST['ajax'])) {
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Guru Pengampu</label>
                             <select name="id_guru" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 font-semibold text-slate-700 transition-all">
                                 <?php 
-                                $q_guru = mysqli_query($db, "SELECT * FROM guru WHERE status_tugas != 'Cuti' ORDER BY nama_guru ASC");
+                                $q_guru = mysqli_query($db, "SELECT * FROM guru WHERE status_tugas != 'Cuti' ORDER BY kode_guru ASC, nama_guru ASC");
                                 while($g = mysqli_fetch_assoc($q_guru)) {
                                     $selected = ($row['id_guru'] == $g['id']) ? 'selected' : '';
-                                    echo "<option value='".$g['id']."' $selected>".$g['nama_guru']."</option>";
+                                    echo "<option value='".$g['id']."' $selected>[".$g['kode_guru']."] - ".$g['nama_guru']."</option>";
                                 }
                                 ?>
                             </select>
@@ -145,10 +138,10 @@ if (isset($_POST['ajax'])) {
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Mata Pelajaran</label>
                             <select name="id_mapel" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 font-semibold text-slate-700 transition-all">
                                 <?php 
-                                $q_mapel = mysqli_query($db, "SELECT * FROM mapel ORDER BY nama_mapel ASC");
+                                $q_mapel = mysqli_query($db, "SELECT * FROM mapel ORDER BY kode_mapel ASC, nama_mapel ASC");
                                 while($m = mysqli_fetch_assoc($q_mapel)) {
                                     $selected = ($row['id_mapel'] == $m['id']) ? 'selected' : '';
-                                    echo "<option value='".$m['id']."' $selected>".$m['nama_mapel']."</option>";
+                                    echo "<option value='".$m['id']."' $selected>[".$m['kode_mapel']."] - ".$m['nama_mapel']."</option>";
                                 }
                                 ?>
                             </select>

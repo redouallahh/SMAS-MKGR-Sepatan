@@ -16,24 +16,14 @@ $error_msg = "";
 if (isset($_POST['ajax'])) {
     header('Content-Type: application/json');
     $nama_mapel = mysqli_real_escape_string($db, trim($_POST['nama_mapel']));
-    $kelompok = mysqli_real_escape_string($db, $_POST['kelompok']);
-
-    // Generate kode unik otomatis dari singkatan nama (contoh: Bahasa Indonesia -> BHS)
-    $nama_upper = strtoupper($nama_mapel);
-    $konsonan = preg_replace('/[AEIOU\s\W]/', '', $nama_upper);
-    if (strlen($konsonan) >= 3) {
-        $prefix = substr($konsonan, 0, 3);
-    } else {
-        $prefix = substr(preg_replace('/[\s\W]/', '', $nama_upper), 0, 3);
-    }
-    $kode = $prefix . '-' . rand(100, 999);
+    $kode = mysqli_real_escape_string($db, trim($_POST['kode_mapel']));
 
     // Cek duplikasi kode mapel
     $cek_ganda = mysqli_query($db, "SELECT id FROM mapel WHERE kode_mapel = '$kode'");
     if (mysqli_num_rows($cek_ganda) > 0) {
-        echo json_encode(['status' => 'error', 'message' => 'Gagal! Terjadi kesalahan sistem. Silakan coba kembali.']);
+        echo json_encode(['status' => 'error', 'message' => 'Gagal! Kode mapel sudah terpakai.']);
     } else {
-        $insert = mysqli_query($db, "INSERT INTO mapel (kode_mapel, nama_mapel, kelompok) VALUES ('$kode', '$nama_mapel', '$kelompok')");
+        $insert = mysqli_query($db, "INSERT INTO mapel (kode_mapel, nama_mapel) VALUES ('$kode', '$nama_mapel')");
         if ($insert) {
             echo json_encode(['status' => 'success', 'message' => 'Mata pelajaran berhasil ditambahkan.']);
         } else {
@@ -96,12 +86,8 @@ if (isset($_POST['ajax'])) {
                             <input type="text" name="nama_mapel" pattern="[a-zA-Z0-9\s\-]+" oninput="this.value = this.value.replace(/[^a-zA-Z0-9\s\-]/g, '')" title="Nama mata pelajaran hanya boleh berisi huruf, angka, spasi, dan tanda hubung" placeholder="Contoh: Matematika Wajib" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Kelompok Kurikulum</label>
-                            <select name="kelompok" class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-semibold text-slate-700">
-                                <option value="Wajib">Kelompok A (Wajib Nasional)</option>
-                                <option value="Peminatan">Kelompok B (Peminatan Internal)</option>
-                                <option value="Muatan Lokal">Kelompok C (Muatan Lokal)</option>
-                            </select>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Kode Mata Pelajaran</label>
+                            <input type="text" name="kode_mapel" placeholder="Contoh: A" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
                         </div>
                         <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
                             <a href="mapel.php" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs rounded-xl transition-all">Batal</a>

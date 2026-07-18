@@ -13,7 +13,26 @@ if ($_SESSION['role'] !== 'admin') {
 }
 
 // Silakan un-comment baris di bawah ini jika ingin langsung menghubungkan ke database asli kamu:
-$query = mysqli_query($db, "SELECT guru.*, user.username FROM guru LEFT JOIN user ON guru.id_user = user.id ORDER BY guru.id DESC");
+$allowed_sorts = ['kode_guru', 'nip', 'nama_guru', 'kontak', 'status_tugas'];
+$sort = isset($_GET['sort']) && in_array($_GET['sort'], $allowed_sorts) ? $_GET['sort'] : 'id';
+$dir = isset($_GET['dir']) && $_GET['dir'] === 'asc' ? 'ASC' : 'DESC'; // Default to DESC for ID
+
+$search = isset($_GET['q']) ? mysqli_real_escape_string($db, trim($_GET['q'])) : '';
+$whereClause = "";
+if ($search !== '') {
+    $whereClause = "WHERE guru.nama_guru LIKE '%$search%' OR guru.kode_guru LIKE '%$search%' OR guru.nip LIKE '%$search%'";
+}
+
+$query = mysqli_query($db, "SELECT guru.*, user.username FROM guru LEFT JOIN user ON guru.id_user = user.id $whereClause ORDER BY guru.$sort $dir");
+
+function sortLink($column, $label, $current_sort, $current_dir) {
+    $new_dir = ($current_sort === $column && $current_dir === 'DESC') ? 'asc' : 'desc';
+    $icon = '';
+    if ($current_sort === $column) {
+        $icon = $current_dir === 'ASC' ? ' &uarr;' : ' &darr;';
+    }
+    return "<a href='?sort=$column&dir=$new_dir' class='hover:text-slate-800 transition-colors inline-flex items-center gap-1'>$label<span class='text-[10px]'>$icon</span></a>";
+}
 ?>
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-50">
@@ -55,7 +74,20 @@ $query = mysqli_query($db, "SELECT guru.*, user.username FROM guru LEFT JOIN use
                         <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Manajemen Data Guru</h2>
                         <p class="text-xs text-slate-400 mt-1">Kelola data tenaga pengajar, nama lengkap, NIP, beserta status fungsionalnya.</p>
                     </div>
-                    <div>
+                    <div class="flex items-center gap-3">
+                        <form method="GET" action="" style="position:relative;">
+                            <?php if(isset($_GET['sort'])): ?>
+                                <input type="hidden" name="sort" value="<?= $_GET['sort'] ?>">
+                                <input type="hidden" name="dir" value="<?= $_GET['dir'] ?>">
+                            <?php endif; ?>
+                            <input type="text" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Cari kode/nama/NIP..." style="padding: 10px 36px 10px 36px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; font-size:12px; outline:none; width:240px; font-family:inherit; color:#1e293b; transition: border-color .2s, background .2s;" onfocus="this.style.background='#fff';this.style.borderColor='#1e293b'" onblur="this.style.background='#f8fafc';this.style.borderColor='#e2e8f0'">
+                            <svg width="16" height="16" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <?php if($search): ?>
+                                <a href="?" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#94a3b8;line-height:0;">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </a>
+                            <?php endif; ?>
+                        </form>
                         <a href="tambah_guru.php" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-all shadow-sm active:scale-95">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -72,11 +104,11 @@ $query = mysqli_query($db, "SELECT guru.*, user.username FROM guru LEFT JOIN use
                             <thead>
                                 <tr class="bg-slate-50/70 border-b border-slate-100">
                                     <th class="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider w-16 text-center">No</th>
-                                    <th class="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">NIP / Kode</th>
-                                    <th class="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama Lengkap Guru</th>
-                                    <th class="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Kontak / No. HP</th>
-                                    <th class="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Akun Login</th>
-                                    <th class="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Status Tugas</th>
+                                    <th class="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider"><?= sortLink('kode_guru', 'Kode Guru', $sort, $dir) ?></th>
+                                    <th class="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider"><?= sortLink('nip', 'NIP', $sort, $dir) ?></th>
+                                    <th class="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider"><?= sortLink('nama_guru', 'Nama Lengkap Guru', $sort, $dir) ?></th>
+                                    <th class="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider"><?= sortLink('kontak', 'Kontak / No. HP', $sort, $dir) ?></th>
+                                    <th class="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider"><?= sortLink('status_tugas', 'Status Tugas', $sort, $dir) ?></th>
                                     <th class="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider w-32 text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -88,6 +120,7 @@ $query = mysqli_query($db, "SELECT guru.*, user.username FROM guru LEFT JOIN use
                                 ?>
                                     <tr class="hover:bg-slate-50/40 transition-colors">
                                         <td class="p-4 text-center text-slate-400 font-normal"><?= $no++; ?></td>
+                                        <td class="p-4 text-slate-900 font-semibold text-center"><?= htmlspecialchars($row['kode_guru'] ?? '-'); ?></td>
                                         <td class="p-4 text-slate-900 font-semibold tracking-tight"><?= $row['nip']; ?></td>
                                         <td class="p-4">
                                             <div class="text-slate-900 font-semibold"><?= htmlspecialchars($row['nama_guru'] ?? '-'); ?></div>
@@ -97,21 +130,10 @@ $query = mysqli_query($db, "SELECT guru.*, user.username FROM guru LEFT JOIN use
                                         </td>
                                         <td class="p-4 text-slate-500 font-normal"><?= $row['kontak']; ?></td>
                                         <td class="p-4">
-                                            <?php if (!empty($row['username'])): ?>
-                                                <div class="text-slate-700 font-semibold text-sm">@<?= htmlspecialchars($row['username']); ?></div>
-                                            <?php else: ?>
-                                                <span class="text-[11px] text-slate-400 italic">Belum ada akun</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="p-4">
                                             <?php if ($row['status_tugas'] == 'Aktif Mengajar') : ?>
-                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                                    Aktif Mengajar
-                                                </span>
+                                                <span class="font-bold text-slate-700">Aktif Mengajar</span>
                                             <?php else : ?>
-                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-100">
-                                                    Cuti / Non-Aktif
-                                                </span>
+                                                <span class="font-bold text-slate-700">Cuti / Non-Aktif</span>
                                             <?php endif; ?>
                                         </td>
                                         <td class="p-4 text-center">
@@ -133,7 +155,7 @@ $query = mysqli_query($db, "SELECT guru.*, user.username FROM guru LEFT JOIN use
 
                                 <?php if (mysqli_num_rows($query) === 0) : ?>
                                     <tr>
-                                        <td colspan="6" class="p-8 text-center text-slate-400 font-normal">Belum ada data guru di dalam database.</td>
+                                        <td colspan="7" class="p-8 text-center text-slate-400 font-normal">Belum ada data guru di dalam database.</td>
                                     </tr>
                                 <?php endif; ?>
 

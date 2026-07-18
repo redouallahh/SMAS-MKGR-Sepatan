@@ -8,6 +8,12 @@ if (!isset($_SESSION['login'])) {
 }
 $role = $_SESSION['role'] ?? 'admin';
 
+$search = isset($_GET['q']) ? mysqli_real_escape_string($db, trim($_GET['q'])) : '';
+$whereClause = "";
+if ($search !== '') {
+    $whereClause = "WHERE m.nama_mapel LIKE '%$search%' OR g.nama_guru LIKE '%$search%' OR k.nama_kelas LIKE '%$search%' OR j.hari LIKE '%$search%'";
+}
+
 // Query untuk menampilkan daftar jadwal
 $query = mysqli_query($db, "
     SELECT j.*, g.nama_guru, k.nama_kelas, m.nama_mapel 
@@ -15,6 +21,7 @@ $query = mysqli_query($db, "
     LEFT JOIN guru g ON j.id_guru = g.id 
     LEFT JOIN kelas k ON j.id_kelas = k.id 
     LEFT JOIN mapel m ON j.id_mapel = m.id 
+    $whereClause
     ORDER BY j.hari ASC, j.jam_ke ASC
 ");
 ?>
@@ -47,9 +54,18 @@ $query = mysqli_query($db, "
                         <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Daftar Jadwal Pengajaran Aktif</h2>
                         <p class="text-xs text-slate-400 mt-1">Sistem Jadwal Terintegrasi SMAS MKGR Sepatan.</p>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <form method="GET" action="" style="position:relative;">
+                            <input type="text" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Cari mapel/guru/kelas/hari..." style="padding: 10px 36px 10px 36px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; font-size:12px; outline:none; width:260px; font-family:inherit; color:#1e293b; transition: border-color .2s, background .2s;" onfocus="this.style.background='#fff';this.style.borderColor='#1e293b'" onblur="this.style.background='#f8fafc';this.style.borderColor='#e2e8f0'">
+                            <svg width="16" height="16" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <?php if($search): ?>
+                                <a href="?" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#94a3b8;line-height:0;">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </a>
+                            <?php endif; ?>
+                        </form>
                         <a href="cetak_jadwal.php" target="_blank" class="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold text-xs rounded-xl transition-all shadow-sm flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2-2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                             Cetak / Unduh
                         </a>
                         <?php if ($role == 'admin'): ?>
@@ -85,10 +101,10 @@ $query = mysqli_query($db, "
                                         <tr class="hover:bg-slate-50/40 transition-colors">
                                             <td class="p-4 text-center text-slate-400"><?= $no++; ?></td>
                                             <td class="p-4 font-bold text-slate-800"><?= $row['hari']; ?></td>
-                                            <td class="p-4 font-semibold text-indigo-600">Jam Ke-<?= $row['jam_ke']; ?></td>
-                                            <td class="p-4 font-bold text-slate-900"><?= $row['nama_mapel'] ?? '<span class="text-rose-500">Terhapus</span>'; ?></td>
-                                            <td class="p-4 text-slate-600"><?= $row['nama_kelas'] ?? '<span class="text-rose-500">Terhapus</span>'; ?></td>
-                                            <td class="p-4 text-slate-500"><?= $row['nama_guru'] ?? '<span class="text-rose-500">Terhapus</span>'; ?></td>
+                                            <td class="p-4 font-semibold text-slate-800">Jam Ke-<?= $row['jam_ke']; ?></td>
+                                            <td class="p-4 font-bold text-slate-900"><?= $row['nama_mapel'] ?? '<span class="font-bold text-slate-500">Terhapus</span>'; ?></td>
+                                            <td class="p-4 text-slate-600"><?= $row['nama_kelas'] ?? '<span class="font-bold text-slate-500">Terhapus</span>'; ?></td>
+                                            <td class="p-4 text-slate-500"><?= $row['nama_guru'] ?? '<span class="font-bold text-slate-500">Terhapus</span>'; ?></td>
                                             
                                             <?php if ($role == 'admin'): ?>
                                             <td class="p-4 text-center">

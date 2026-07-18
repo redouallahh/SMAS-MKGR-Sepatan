@@ -83,15 +83,15 @@ if (isset($_POST['ajax'])) {
 
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Jam Ke-</label>
-                            <input type="number" name="jam_ke" min="1" max="15" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="Jam ke harus antara 1 sampai 15" required placeholder="Contoh: 1" class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
+                            <input type="number" name="jam_ke" min="1" max="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="Jam ke harus antara 1 sampai 10" required placeholder="Contoh: 1, 2, 8..." class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
                         </div>
 
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Guru Pengampu</label>
                             <select name="id_guru" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
                                 <?php 
-                                $q_guru = mysqli_query($db, "SELECT * FROM guru WHERE status_tugas != 'Cuti' ORDER BY nama_guru ASC");
-                                while($g = mysqli_fetch_assoc($q_guru)) echo "<option value='".$g['id']."'>".$g['nama_guru']."</option>";
+                                $q_guru = mysqli_query($db, "SELECT * FROM guru WHERE status_tugas != 'Cuti' ORDER BY kode_guru ASC, nama_guru ASC");
+                                while($g = mysqli_fetch_assoc($q_guru)) echo "<option value='".$g['id']."'>[".$g['kode_guru']."] - ".$g['nama_guru']."</option>";
                                 ?>
                             </select>
                         </div>
@@ -110,8 +110,8 @@ if (isset($_POST['ajax'])) {
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Mata Pelajaran</label>
                             <select name="id_mapel" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
                                 <?php 
-                                $q_mapel = mysqli_query($db, "SELECT * FROM mapel ORDER BY nama_mapel ASC");
-                                while($m = mysqli_fetch_assoc($q_mapel)) echo "<option value='".$m['id']."'>".$m['nama_mapel']."</option>";
+                                $q_mapel = mysqli_query($db, "SELECT * FROM mapel ORDER BY kode_mapel ASC, nama_mapel ASC");
+                                while($m = mysqli_fetch_assoc($q_mapel)) echo "<option value='".$m['id']."'>[".$m['kode_mapel']."] - ".$m['nama_mapel']."</option>";
                                 ?>
                             </select>
                         </div>

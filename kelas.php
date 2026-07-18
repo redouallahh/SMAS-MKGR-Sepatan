@@ -11,8 +11,14 @@ if ($_SESSION['role'] !== 'admin') {
     exit;
 }
 
+$search = isset($_GET['q']) ? mysqli_real_escape_string($db, trim($_GET['q'])) : '';
+$whereClause = "";
+if ($search !== '') {
+    $whereClause = "WHERE nama_kelas LIKE '%$search%'";
+}
+
 // Ambil data kelas dari database
-$query = mysqli_query($db, "SELECT * FROM kelas ORDER BY id DESC") or die(mysqli_error($db));
+$query = mysqli_query($db, "SELECT * FROM kelas $whereClause ORDER BY id DESC") or die(mysqli_error($db));
 ?>
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-50">
@@ -42,7 +48,16 @@ $query = mysqli_query($db, "SELECT * FROM kelas ORDER BY id DESC") or die(mysqli
                         <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Manajemen Ruang Kelas</h2>
                         <p class="text-xs text-slate-400 mt-1">Daftar registrasi rombongan belajar (Kelas) SMAS MKGR Sepatan.</p>
                     </div>
-                    <div>
+                    <div class="flex items-center gap-3">
+                        <form method="GET" action="" style="position:relative;">
+                            <input type="text" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Cari ruang kelas..." style="padding: 10px 36px 10px 36px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; font-size:12px; outline:none; width:240px; font-family:inherit; color:#1e293b; transition: border-color .2s, background .2s;" onfocus="this.style.background='#fff';this.style.borderColor='#1e293b'" onblur="this.style.background='#f8fafc';this.style.borderColor='#e2e8f0'">
+                            <svg width="16" height="16" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <?php if($search): ?>
+                                <a href="?" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#94a3b8;line-height:0;">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </a>
+                            <?php endif; ?>
+                        </form>
                         <a href="tambah_kelas.php" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-all shadow-sm active:scale-95">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>

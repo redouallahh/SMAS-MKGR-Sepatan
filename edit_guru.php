@@ -27,6 +27,7 @@ $pesan_error = "";
 
 if (isset($_POST['ajax'])) {
     header('Content-Type: application/json');
+    $kode_guru = mysqli_real_escape_string($db, $_POST['kode_guru']);
     $nip = mysqli_real_escape_string($db, $_POST['nip']);
     $nama = mysqli_real_escape_string($db, $_POST['nama_guru']);
     $kontak = mysqli_real_escape_string($db, $_POST['kontak']);
@@ -41,6 +42,29 @@ if (isset($_POST['ajax'])) {
         exit;
     }
     
+    // Validasi Kode Guru unik
+    $cek_kode = mysqli_query($db, "SELECT id FROM guru WHERE kode_guru='$kode_guru' AND id != '$id'");
+    if(mysqli_num_rows($cek_kode) > 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Kode Guru sudah terpakai oleh guru lain!']);
+        exit;
+    }
+    
+    // Validasi NIP unik
+    $cek_nip = mysqli_query($db, "SELECT id FROM guru WHERE nip='$nip' AND id != '$id'");
+    $cek_nip_kepsek = mysqli_query($db, "SELECT id FROM kepalasekolah WHERE nip='$nip'");
+    if(mysqli_num_rows($cek_nip) > 0 || mysqli_num_rows($cek_nip_kepsek) > 0) {
+        echo json_encode(['status' => 'error', 'message' => 'NIP sudah terpakai!']);
+        exit;
+    }
+
+    // Validasi Kontak unik
+    $cek_kontak = mysqli_query($db, "SELECT id FROM guru WHERE kontak='$kontak' AND id != '$id'");
+    $cek_kontak_kepsek = mysqli_query($db, "SELECT id FROM kepalasekolah WHERE kontak='$kontak'");
+    if(mysqli_num_rows($cek_kontak) > 0 || mysqli_num_rows($cek_kontak_kepsek) > 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Nomor HP/Telepon sudah terpakai!']);
+        exit;
+    }
+
     // Validasi username unik
     if (!empty($username)) {
         $id_user = $row['id_user'];
@@ -57,6 +81,7 @@ if (isset($_POST['ajax'])) {
 
     // Update Guru
     $update = mysqli_query($db, "UPDATE guru SET 
+                             kode_guru='$kode_guru',
                              nip='$nip', 
                              nama_guru='$nama', 
                              kontak='$kontak', 
@@ -122,7 +147,7 @@ if (isset($_POST['ajax'])) {
                         </svg>
                     </a>
                     <div>
-                        <h2 class="text-xl font-extrabold text-slate-900">Peri Data Guru</h2>
+                        <h2 class="text-xl font-extrabold text-slate-900">Update Data Guru</h2>
                         <p class="text-xs text-slate-400 mt-0.5">Modifikasi informasi fungsional guru yang dipilih.</p>
                     </div>
                 </div>
@@ -133,9 +158,12 @@ if (isset($_POST['ajax'])) {
 
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-100 shadow-sm">
                     <form action="" method="POST" class="space-y-5">
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Nomor Induk Pegawai (NIP)</label>
-                            <input type="text" name="nip" value="<?= $row['nip']; ?>" pattern="\d{18}" maxlength="18" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="NIP harus 18 digit angka" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <input type="hidden" name="kode_guru" value="<?= htmlspecialchars($row['kode_guru'] ?? ''); ?>">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Nomor Induk Pegawai (NIP)</label>
+                                <input type="text" name="nip" value="<?= $row['nip']; ?>" pattern="\d{18}" maxlength="18" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="NIP harus 18 digit angka" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
+                            </div>
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Nama Lengkap & Gelar</label>
@@ -147,7 +175,7 @@ if (isset($_POST['ajax'])) {
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Status Tugas</label>
-                            <select name="status_tugas" class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 font-semibold text-slate-700 transition-all">
+                            <select name="status_tugas" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 font-semibold text-slate-700 transition-all">
                                 <option value="Aktif Mengajar" <?= ($row['status_tugas'] == 'Aktif Mengajar') ? 'selected' : ''; ?>>Aktif Mengajar</option>
                                 <option value="Cuti" <?= ($row['status_tugas'] == 'Cuti') ? 'selected' : ''; ?>>Cuti / Non-Aktif Sementara</option>
                             </select>

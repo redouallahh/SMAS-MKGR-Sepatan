@@ -16,9 +16,6 @@ if (isset($_POST['ajax'])) {
     $nip = mysqli_real_escape_string($db, $_POST['nip']);
     $nama = mysqli_real_escape_string($db, $_POST['nama_kepsek']);
     $kontak = mysqli_real_escape_string($db, $_POST['kontak']);
-    $status_tugas = mysqli_real_escape_string($db, $_POST['status_tugas']);
-    $notes = mysqli_real_escape_string($db, $_POST['notes']);
-    
     $username = mysqli_real_escape_string($db, $_POST['username']);
     $password = mysqli_real_escape_string($db, $_POST['password']);
 
@@ -27,6 +24,22 @@ if (isset($_POST['ajax'])) {
         exit;
     }
     
+    // Cek NIP
+    $cek_nip = mysqli_query($db, "SELECT id FROM guru WHERE nip='$nip'");
+    $cek_nip_kepsek = mysqli_query($db, "SELECT id FROM kepalasekolah WHERE nip='$nip'");
+    if(mysqli_num_rows($cek_nip) > 0 || mysqli_num_rows($cek_nip_kepsek) > 0) {
+        echo json_encode(['status' => 'error', 'message' => 'NIP sudah terdaftar!']);
+        exit;
+    }
+
+    // Cek Kontak
+    $cek_kontak = mysqli_query($db, "SELECT id FROM guru WHERE kontak='$kontak'");
+    $cek_kontak_kepsek = mysqli_query($db, "SELECT id FROM kepalasekolah WHERE kontak='$kontak'");
+    if(mysqli_num_rows($cek_kontak) > 0 || mysqli_num_rows($cek_kontak_kepsek) > 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Nomor HP/Telepon sudah terdaftar!']);
+        exit;
+    }
+
     // Cek username
     $cek = mysqli_query($db, "SELECT id FROM user WHERE username='$username'");
     if(mysqli_num_rows($cek) > 0) {
@@ -40,8 +53,8 @@ if (isset($_POST['ajax'])) {
     $id_user = mysqli_insert_id($db);
     
     // Insert Kepala Sekolah
-    $insert = mysqli_query($db, "INSERT INTO kepalasekolah (id_user, nip, nama_kepsek, kontak, status_tugas, notes) 
-                            VALUES ('$id_user', '$nip', '$nama', '$kontak', '$status_tugas', '$notes')");
+    $insert = mysqli_query($db, "INSERT INTO kepalasekolah (id_user, nip, nama_kepsek, kontak) 
+                            VALUES ('$id_user', '$nip', '$nama', '$kontak')");
                             
     if ($insert) {
         echo json_encode(['status' => 'success', 'message' => 'Data Kepala Sekolah berhasil ditambahkan!']);
@@ -102,17 +115,7 @@ if (isset($_POST['ajax'])) {
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">No. Handphone / WhatsApp</label>
                             <input type="tel" name="kontak" pattern="\d{10,13}" maxlength="13" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="Nomor HP/WA harus 10-13 digit angka" placeholder="Contoh: 0812xxxxxxxx" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
                         </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Status Tugas</label>
-                            <select name="status_tugas" class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 font-semibold text-slate-700 transition-all">
-                                <option value="Aktif Mengajar">Aktif Mengajar</option>
-                                <option value="Cuti">Cuti / Non-Aktif Sementara</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Notes / Catatan (Opsional)</label>
-                            <textarea name="notes" placeholder="Contoh: Cuti melahirkan s.d Desember / Sedang sakit..." class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium h-24 resize-none"></textarea>
-                        </div>
+
                         <div class="pt-4 border-t border-slate-100 mt-4">
                             <h3 class="text-sm font-extrabold text-slate-800 mb-4">Akun Login Kepala Sekolah</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">

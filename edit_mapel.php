@@ -28,12 +28,17 @@ $row = mysqli_fetch_assoc($query);
 if (isset($_POST['ajax'])) {
     header('Content-Type: application/json');
     $nama_mapel = mysqli_real_escape_string($db, trim($_POST['nama_mapel']));
-    $kelompok = mysqli_real_escape_string($db, $_POST['kelompok']);
+    $kode_mapel = mysqli_real_escape_string($db, trim($_POST['kode_mapel']));
     
-    // Gunakan query yang menyebutkan kolom spesifik agar tidak error urutan
+    $cek_ganda = mysqli_query($db, "SELECT id FROM mapel WHERE kode_mapel = '$kode_mapel' AND id != '$id'");
+    if (mysqli_num_rows($cek_ganda) > 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Gagal! Kode mapel sudah terpakai oleh mapel lain.']);
+        exit;
+    }
+
     $query_update = "UPDATE mapel SET 
-                     nama_mapel='$nama_mapel', 
-                     kelompok='$kelompok' 
+                     kode_mapel='$kode_mapel',
+                     nama_mapel='$nama_mapel' 
                      WHERE id='$id'";
                      
     if (mysqli_query($db, $query_update)) {
@@ -80,12 +85,8 @@ if (isset($_POST['ajax'])) {
                             <input type="text" name="nama_mapel" value="<?= $row['nama_mapel']; ?>" pattern="[a-zA-Z0-9\s\-]+" oninput="this.value = this.value.replace(/[^a-zA-Z0-9\s\-]/g, '')" title="Nama mata pelajaran hanya boleh berisi huruf, angka, spasi, dan tanda hubung" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Kelompok Kurikulum</label>
-                            <select name="kelompok" class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 font-semibold text-slate-700 outline-none focus:bg-white focus:border-slate-900 transition-all">
-                                <option value="Wajib" <?= ($row['kelompok'] == 'Wajib') ? 'selected' : ''; ?>>Kelompok A (Wajib Nasional)</option>
-                                <option value="Peminatan" <?= ($row['kelompok'] == 'Peminatan') ? 'selected' : ''; ?>>Kelompok B (Peminatan Internal)</option>
-                                <option value="Muatan Lokal" <?= ($row['kelompok'] == 'Muatan Lokal') ? 'selected' : ''; ?>>Kelompok C (Muatan Lokal)</option>
-                            </select>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Kode Mata Pelajaran</label>
+                            <input type="text" name="kode_mapel" value="<?= $row['kode_mapel']; ?>" placeholder="Contoh: A" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
                         </div>
                         <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
                             <a href="mapel.php" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs rounded-xl transition-all">Batal</a>

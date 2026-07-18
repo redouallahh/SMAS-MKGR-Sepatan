@@ -30,9 +30,6 @@ if (isset($_POST['ajax'])) {
     $nip = mysqli_real_escape_string($db, $_POST['nip']);
     $nama = mysqli_real_escape_string($db, $_POST['nama_kepsek']);
     $kontak = mysqli_real_escape_string($db, $_POST['kontak']);
-    $status_tugas = mysqli_real_escape_string($db, $_POST['status_tugas']);
-    $notes = mysqli_real_escape_string($db, $_POST['notes']);
-    
     $username = mysqli_real_escape_string($db, $_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
@@ -41,6 +38,22 @@ if (isset($_POST['ajax'])) {
         exit;
     }
     
+    // Validasi NIP unik
+    $cek_nip_kepsek = mysqli_query($db, "SELECT id FROM kepalasekolah WHERE nip='$nip' AND id != '$id'");
+    $cek_nip_guru = mysqli_query($db, "SELECT id FROM guru WHERE nip='$nip'");
+    if(mysqli_num_rows($cek_nip_kepsek) > 0 || mysqli_num_rows($cek_nip_guru) > 0) {
+        echo json_encode(['status' => 'error', 'message' => 'NIP sudah terpakai!']);
+        exit;
+    }
+
+    // Validasi Kontak unik
+    $cek_kontak_kepsek = mysqli_query($db, "SELECT id FROM kepalasekolah WHERE kontak='$kontak' AND id != '$id'");
+    $cek_kontak_guru = mysqli_query($db, "SELECT id FROM guru WHERE kontak='$kontak'");
+    if(mysqli_num_rows($cek_kontak_kepsek) > 0 || mysqli_num_rows($cek_kontak_guru) > 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Nomor HP/Telepon sudah terpakai!']);
+        exit;
+    }
+
     // Validasi username unik
     if (!empty($username)) {
         $id_user = $row['id_user'];
@@ -59,9 +72,7 @@ if (isset($_POST['ajax'])) {
     $update = mysqli_query($db, "UPDATE kepalasekolah SET 
                              nip='$nip', 
                              nama_kepsek='$nama', 
-                             kontak='$kontak', 
-                             status_tugas='$status_tugas', 
-                             notes='$notes' 
+                             kontak='$kontak'
                              WHERE id='$id'");
                              
     // Update atau Insert User
@@ -122,7 +133,7 @@ if (isset($_POST['ajax'])) {
                         </svg>
                     </a>
                     <div>
-                        <h2 class="text-xl font-extrabold text-slate-900">Peri Data Kepala Sekolah</h2>
+                        <h2 class="text-xl font-extrabold text-slate-900">Update Data Kepala Sekolah</h2>
                         <p class="text-xs text-slate-400 mt-0.5">Modifikasi informasi fungsional kepala sekolah yang dipilih.</p>
                     </div>
                 </div>
@@ -145,17 +156,7 @@ if (isset($_POST['ajax'])) {
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">No. Handphone / WhatsApp</label>
                             <input type="tel" name="kontak" value="<?= $row['kontak']; ?>" pattern="\d{10,13}" maxlength="13" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="Nomor HP/WA harus 10-13 digit angka" required class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium">
                         </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Status Tugas</label>
-                            <select name="status_tugas" class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 font-semibold text-slate-700 transition-all">
-                                <option value="Aktif Mengajar" <?= ($row['status_tugas'] == 'Aktif Mengajar') ? 'selected' : ''; ?>>Aktif Mengajar</option>
-                                <option value="Cuti" <?= ($row['status_tugas'] == 'Cuti') ? 'selected' : ''; ?>>Cuti / Non-Aktif Sementara</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Notes / Catatan</label>
-                            <textarea name="notes" class="block w-full text-sm rounded-xl border border-slate-200 p-3 bg-slate-50 outline-none focus:bg-white focus:border-slate-900 transition-all font-medium h-24 resize-none"><?= $row['notes']; ?></textarea>
-                        </div>
+
                         <div class="pt-4 border-t border-slate-100 mt-4">
                             <h3 class="text-sm font-extrabold text-slate-800 mb-4">Akun Login Kepala Sekolah</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">

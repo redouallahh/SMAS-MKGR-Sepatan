@@ -144,7 +144,7 @@ $username = $_SESSION['username'] ?? 'User';
                                 <div>
                                     <div class="flex justify-between text-xs mb-1">
                                         <span class="text-slate-600">Integritas Jadwal</span>
-                                        <span class="text-emerald-600 font-medium">Aman</span>
+                                        <span class="text-slate-800 font-medium">Aman</span>
                                     </div>
                                     <div class="w-full bg-slate-100 rounded-full h-1.5">
                                       <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 100%"></div>

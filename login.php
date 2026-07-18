@@ -42,15 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
                 } 
-                // Cek status tugas Kepala Sekolah
-                elseif ($role_user === 'kepala_sekolah') {
-                    $cek_kepsek = mysqli_query($db, "SELECT status_tugas FROM kepalasekolah WHERE id_user = '$id_user'");
-                    if ($r = mysqli_fetch_assoc($cek_kepsek)) {
-                        if ($r['status_tugas'] === 'Cuti') {
-                            $is_cuti = true;
-                        }
-                    }
-                }
+                // Kepala sekolah tidak memiliki status_tugas (kolom sudah dihapus)
 
                 if ($is_cuti) {
                     $error = 'Akun Anda dinonaktifkan sementara (Status: Cuti). Silakan hubungi Administrator.';
@@ -90,14 +82,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
+        .login-bg {
+            background-image: url('images/smamkgrsepatan.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .login-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 15, 30, 0.65);
+            backdrop-filter: blur(2px);
+        }
     </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-4 relative overflow-hidden">
+<body class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden login-bg">
 
-    <!-- Elemen Dekoratif Background (Grid & Glow) -->
-    <div class="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:32px_32px]"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <!-- Tidak perlu elemen dekoratif, sudah ada foto sekolah -->
 
     <!-- Container Utama (Card Login Tengah) -->
     <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 md:p-10 z-10 border border-slate-100/80">
@@ -134,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <!-- Input Username -->
             <div>
-                <label for="username" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Username / NIP</label>
+                <label for="username" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Username</label>
                 <div class="relative rounded-xl shadow-sm">
                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 z-10">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
