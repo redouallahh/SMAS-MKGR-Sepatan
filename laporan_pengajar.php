@@ -59,16 +59,25 @@ $stat_jadwal = mysqli_fetch_assoc(mysqli_query($db, "SELECT COUNT(*) as c FROM j
             .print-full { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
             .border-collapse { width: 100% !important; }
             @page { margin: 1cm; }
-            body { background: white !important; }
+            html, body { height: auto !important; min-height: auto !important; overflow: visible !important; background: white !important; }
+            /* Force reset Tailwind height & overflow to allow multi-page printing */
+            .h-screen { height: auto !important; }
+            .min-h-screen { min-height: auto !important; }
+            .overflow-y-auto { overflow: visible !important; }
+            .overflow-x-auto { overflow: visible !important; }
         }
     </style>
 </head>
 <body class="h-full antialiased text-slate-800 bg-slate-50/50">
-    <div class="flex min-h-screen">
-        <?php include 'includes/sidebar.php'; ?>
+    <div class="flex min-h-screen print:block">
+        <div class="no-print">
+            <?php include 'includes/sidebar.php'; ?>
+        </div>
 
-        <div class="flex-1 min-w-0 h-screen overflow-y-auto bg-slate-50/30 relative">
-            <?php include 'includes/header.php'; ?>
+        <div class="flex-1 min-w-0 h-screen print:h-auto overflow-y-auto print:overflow-visible bg-slate-50/30 relative">
+            <div class="no-print">
+                <?php include 'includes/header.php'; ?>
+            </div>
 
             <div class="p-6 md:p-10 space-y-6 max-w-[1600px] mx-auto print-full">
 
@@ -152,7 +161,7 @@ $stat_jadwal = mysqli_fetch_assoc(mysqli_query($db, "SELECT COUNT(*) as c FROM j
                         </form>
                     </div>
 
-                    <div class="overflow-x-auto print-full">
+                    <div class="overflow-x-auto print-full print:overflow-visible">
                         <table class="w-full text-left border-collapse print:text-black">
                             <thead>
                                 <tr class="bg-slate-50 print:bg-transparent border-b border-slate-100 print:border-black">
